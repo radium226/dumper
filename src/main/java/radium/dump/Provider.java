@@ -1,4 +1,4 @@
-package radium.dumper;
+package radium.dump;
 
 import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
@@ -9,9 +9,9 @@ import org.slf4j.LoggerFactory;
 import org.sql2o.Connection;
 import org.sql2o.ResultSetHandler;
 
-import radium.dumper.impl.CursorProvider;
-import radium.dumper.impl.ObjectProvider;
-import radium.dumper.impl.QueryProvider;
+import radium.dump.impl.CursorProvider;
+import radium.dump.impl.ObjectProvider;
+import radium.dump.impl.QueryProvider;
 
 public interface Provider {
 	

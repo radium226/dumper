@@ -1,4 +1,4 @@
-package radium.dumper.impl;
+package radium.dump.impl;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -7,11 +7,13 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 
-import radium.dumper.Dumper;
+import radium.dump.Dumper;
 import com.google.common.base.Optional;
 
 public class CSVDumper implements Dumper {
 
+	final public static String EXTENSION = "csv";
+	
 	private PrintStream printStream;
 	private int rowCount;
 	private int columnCount;
@@ -67,6 +69,11 @@ public class CSVDumper implements Dumper {
 	@Override
 	public void onEnd() throws IOException {
 		this.printStream.close();
+	}
+	
+	@Override
+	public String getExtension() {
+		return EXTENSION;
 	}
 
 }

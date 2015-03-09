@@ -1,4 +1,4 @@
-package radium.dumper.impl;
+package radium.dump.impl;
 
 import java.sql.SQLException;
 
@@ -6,7 +6,7 @@ import org.sql2o.Connection;
 import org.sql2o.Query;
 import org.sql2o.ResultSetHandler;
 
-import radium.dumper.Provider;
+import radium.dump.Provider;
 
 public class QueryProvider implements Provider {
 

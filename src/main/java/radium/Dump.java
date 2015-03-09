@@ -3,8 +3,15 @@ package radium;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
@@ -16,23 +23,31 @@ import org.sql2o.Connection;
 import org.sql2o.ResultSetHandler;
 import org.sql2o.Sql2o;
 
-import radium.arg4j.Sql2oOptionHandler;
-import radium.dumper.Dumper;
-import radium.dumper.Provider;
+import radium.args4j.Sql2oOptionHandler;
+import radium.dump.Compressor;
+import radium.dump.Dumper;
+import radium.dump.Provider;
+import radium.dump.impl.NoneCompressor;
+import radium.dump.impl.ZIPCompressor;
 import com.google.common.base.Charsets;
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Objects;
 import com.google.common.base.Optional;
 import com.google.common.io.Files;
 
 public class Dump {
 
 	final private static Logger LOGGER = LoggerFactory.getLogger(Dump.class);
+	final public static String DEFAULT_NAME = "unnamed";
 	
 	@Option(name = "--dumper", metaVar = "DUMPER", usage = "Output format (XLSX, CSV, etc.)", required = false)
 	private Dumper.Type dumperType;
 	
 	@Option(name = "--provider", metaVar = "PROVIDER", usage = "Provider to use (Cursor, Query, etc)", required = false)
 	private Provider.Type providerType;
+	
+	@Option(name = "--compressor", metaVar = "COMPRESSOR", required = false)
+	private Compressor.Type compressorType;
 	
 	@Option(name = "--file", metaVar = "FILE")
 	private boolean readFile = false;
@@ -59,43 +74,73 @@ public class Dump {
 	
 	public void dump() {
 		try {
+			final PipedInputStream pipedInputStream = new PipedInputStream();
+			final PipedOutputStream pipedOutputStream = new PipedOutputStream(pipedInputStream);
+			
 			String argument = this.readFile ? Files.toString(new File(this.argument), Charsets.UTF_8) : this.argument;
-			String name = MoreObjects.firstNonNull(this.name, this.argument);
+			String name = Optional.fromNullable(this.name).or(DEFAULT_NAME);
 			
 			final Dumper dumper = Optional.fromNullable(this.dumperType).or(Dumper.Type.CSV).newDumper();
 			final Provider provider = Optional.fromNullable(providerType).or(Provider.Type.OBJECT).newProvider(argument);
-			if (outputFile != null) {
-				try (FileOutputStream fileOutputStream = new FileOutputStream(outputFile)) {
-					dumper.onBegin(name, fileOutputStream);
-				} catch (IOException e) {
-					LOGGER.error("Unable to write output file");
-				}
-			} else {
-				try {
-					dumper.onBegin(name, System.out);
-				} catch (IOException e) {
-					LOGGER.error("Unable to write to standard output", e);
-				}
-			}
+			final Compressor compressor = Optional.fromNullable(compressorType).or(Compressor.Type.NONE).newCompressor(name + "." + dumper.getExtension());
 			
-			Connection connection = sql2o.open();
-		
-			provider.provide(connection, new ResultSetHandler<Void>() {
+			final OutputStream outputStream = outputFile != null ? new FileOutputStream(outputFile) : System.out;
+			
+			final Connection connection = sql2o.open();
+			dumper.onBegin(name, pipedOutputStream);
+			
+			ExecutorService providerExecutor = Executors.newSingleThreadExecutor();
+			Future<Void> providerFuture = providerExecutor.submit(new Callable<Void> () {
 
 				@Override
-				public Void handle(ResultSet resultSet) throws SQLException {
-					try {
-						dumper.onIteration(resultSet);
-					} catch (IOException e) {
-						throw new SQLException(e); // LET'S BREAK IT! 
-					}
+				public Void call() throws Exception {
+					provider.provide(connection, new ResultSetHandler<Void>() {
+
+						@Override
+						public Void handle(ResultSet resultSet) throws SQLException {
+							try {
+								dumper.onIteration(resultSet);
+							} catch (IOException e) {
+								throw new SQLException(e); // LET'S BREAK IT! 
+							}
+							
+							return null;
+						}
+						
+					});
+					dumper.onEnd();
+					pipedOutputStream.close();
+					
 					return null;
 				}
 				
 			});
+			
+			ExecutorService compressorExecutor = Executors.newSingleThreadExecutor();
+			Future<Void> compressorFuture = compressorExecutor.submit(new Callable<Void>() {
+
+				@Override
+				public Void call() throws Exception {
+					compressor.compress(pipedInputStream, outputStream);
+					pipedInputStream.close();
+					
+					return null; 
+				}
+				
+			});
+			
+			providerFuture.get();
+			compressorFuture.get();
+			
 			connection.close();
-			dumper.onEnd();
-		} catch (IOException | SQLException e) {
+			
+			if (outputFile != null) {
+				outputStream.close();
+			}
+			
+			compressorExecutor.shutdown();
+			providerExecutor.shutdown();
+		} catch (Exception e) {
 			LOGGER.error("Something happened in the end, but it doesn't really matter", e);
 		}
 		

@@ -1,4 +1,4 @@
-package radium.dumper.impl;
+package radium.dump.impl;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -23,11 +23,13 @@ import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTTableColumns;
 import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTTableStyleInfo;
 import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTWorksheet;
 
-import radium.dumper.Dumper;
+import radium.dump.Dumper;
 import com.google.common.collect.Lists;
 
 public class ExcelDumper implements Dumper {
 
+	final public static String EXTENSION = "xslx";
+	
 	private String objectName;
 	private XSSFWorkbook workbook;
 	private XSSFSheet sheet;
@@ -95,11 +97,11 @@ public class ExcelDumper implements Dumper {
 
 		CTTable table = sheet.createTable().getCTTable();
 		CTTableStyleInfo tableStyleInfo = table.addNewTableStyleInfo();
-		tableStyleInfo.setName("TableStyleMedium9");
+		tableStyleInfo.setName("TableStyleMedium16");
 		tableStyleInfo.setShowColumnStripes(false);
 		tableStyleInfo.setShowRowStripes(true);
 
-		AreaReference dataRange = new AreaReference(new CellReference(0, 0), new CellReference(rowCount - 1, columnCount - 1));
+		AreaReference dataRange = new AreaReference(new CellReference(0, 0), new CellReference(rowCount, columnCount - 1));
 		table.setRef(dataRange.formatAsString());
 		table.setDisplayName(objectName);
 		table.setName(objectName);
@@ -141,6 +143,10 @@ public class ExcelDumper implements Dumper {
 		ctCol.setMin(startIndex + 1);
 		ctCol.setMax(16384);
 		ctCol.setHidden(true);
+	}
+	
+	public String getExtension() {
+		return EXTENSION;
 	}
 
 }

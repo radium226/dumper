@@ -1,4 +1,4 @@
-package radium.dumper;
+package radium.dump;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -8,8 +8,8 @@ import java.sql.SQLException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import radium.dumper.impl.CSVDumper;
-import radium.dumper.impl.ExcelDumper;
+import radium.dump.impl.CSVDumper;
+import radium.dump.impl.ExcelDumper;
 
 public interface Dumper {
 	
@@ -47,5 +47,7 @@ public interface Dumper {
 	void onIteration(ResultSet resultSet) throws SQLException, IOException;
 
 	void onEnd() throws IOException;
+	
+	String getExtension();
 
 }

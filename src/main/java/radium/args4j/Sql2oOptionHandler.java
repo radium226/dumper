@@ -1,4 +1,4 @@
-package radium.arg4j;
+package radium.args4j;
 
 import java.io.IOException;
 import java.util.regex.Matcher;
