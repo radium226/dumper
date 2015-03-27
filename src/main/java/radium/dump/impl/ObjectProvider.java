@@ -1,6 +1,7 @@
 package radium.dump.impl;
 
 import java.sql.SQLException;
+import java.util.Map;
 
 import org.sql2o.Connection;
 import org.sql2o.ResultSetHandler;
@@ -18,8 +19,8 @@ public class ObjectProvider implements Provider {
 	}
 	
 	@Override
-	public <T> void provide(Connection connection, ResultSetHandler<T> resultSetHandler) throws SQLException {
-		Provider.Type.QUERY.newProvider("SELECT * FROM " + objectName).provide(connection, resultSetHandler);
+	public <T> void provide(Connection connection, Map<String, String> variables, ResultSetHandler<T> resultSetHandler) throws SQLException {
+		Provider.Type.QUERY.newProvider("SELECT * FROM " + objectName).provide(connection, variables, resultSetHandler);
 	}
 
 }

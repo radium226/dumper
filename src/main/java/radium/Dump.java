@@ -8,6 +8,7 @@ import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -17,22 +18,21 @@ import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
+import org.kohsuke.args4j.spi.MapOptionHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sql2o.Connection;
 import org.sql2o.ResultSetHandler;
 import org.sql2o.Sql2o;
 
+import radium.common.Substitutor;
 import radium.args4j.Sql2oOptionHandler;
 import radium.dump.Compressor;
 import radium.dump.Dumper;
 import radium.dump.Provider;
-import radium.dump.impl.NoneCompressor;
-import radium.dump.impl.ZIPCompressor;
 import com.google.common.base.Charsets;
-import com.google.common.base.MoreObjects;
-import com.google.common.base.Objects;
 import com.google.common.base.Optional;
+import com.google.common.collect.Maps;
 import com.google.common.io.Files;
 
 public class Dump {
@@ -40,40 +40,47 @@ public class Dump {
 	final private static Logger LOGGER = LoggerFactory.getLogger(Dump.class);
 	final public static String DEFAULT_NAME = "unnamed";
 	
-	@Option(name = "--dumper", metaVar = "DUMPER", usage = "Output format (XLSX, CSV, etc.)", required = false)
+	@Option(name = "-h", aliases = {"--help"}, usage = "Display help", help = true)
+	private boolean help;
+	
+	@Option(name = "-d", aliases = {"--dumper"}, metaVar = "DUMPER", usage = "Output format (XLSX, CSV, etc.)", required = false)
 	private Dumper.Type dumperType;
 	
-	@Option(name = "--provider", metaVar = "PROVIDER", usage = "Provider to use (Cursor, Query, etc)", required = false)
+	@Option(name = "-p", aliases = {"--provider"}, metaVar = "PROVIDER", usage = "Provider to use (Cursor, Query, etc)", required = false)
 	private Provider.Type providerType;
 	
-	@Option(name = "--compressor", metaVar = "COMPRESSOR", required = false)
+	@Option(name = "-c", aliases = {"--compressor"}, metaVar = "COMPRESSOR", required = false, usage = "Compressor (ZIP, etc.)")
 	private Compressor.Type compressorType;
 	
-	@Option(name = "--file", metaVar = "FILE")
+	@Option(name = "-f", aliases = {"--file"}, usage = "Flag to specify if the SQL is inline or in a file")
 	private boolean readFile = false;
 	
-	@Option(name = "--name", metaVar = "NAME", required = false)
+	@Option(name = "-n", aliases = {"--name"}, metaVar = "NAME", required = false, usage = "Name (of the tab)")
 	private String name;
+	
+	@Option(name = "-v", aliases = {"--variable"}, metaVar = "VARIABLE", handler=MapOptionHandler.class, usage = "Variables to bind to the SQL query")
+	private Map<String, String> variables = Maps.newHashMap();
 	
 	@Argument(index = 0, metaVar = "URL", usage = "JDBC URL to connect to", required = true, handler = Sql2oOptionHandler.class)
 	private Sql2o sql2o;
 	
-	@Argument(index = 1, metaVar = "DATABASE OBJECT", usage = "Database object to fetch (Table, View, etc.)", required = true)
+	@Argument(index = 1, metaVar = "INPUT", usage = "Input to use (file path if --file, SQL query if --provider=QUERY, database object name if --provider=OBJECT, etc.)", required = true)
 	private String argument;
 	
-	@Argument(index = 2, metaVar = "OUTPUT FILE", usage = "Output file", required = false)
-	private File outputFile;
+	@Argument(index = 2, metaVar = "OUTPUT FILE", usage = "Output file path (which can contain {variable})", required = false)
+	private String outputFilePath;
 	
 	public Dump() {
 		super();
 	}
-	
-	public static String selectSQL(String objectName) {
-		return "SELECT * FROM " + objectName;
-	}
-	
-	public void dump() {
+
+	public void dump(CmdLineParser parser) {
 		try {
+			if (help) {
+				parser.printUsage(System.out);
+				return;
+			}
+			
 			final PipedInputStream pipedInputStream = new PipedInputStream();
 			final PipedOutputStream pipedOutputStream = new PipedOutputStream(pipedInputStream);
 			
@@ -84,7 +91,7 @@ public class Dump {
 			final Provider provider = Optional.fromNullable(providerType).or(Provider.Type.OBJECT).newProvider(argument);
 			final Compressor compressor = Optional.fromNullable(compressorType).or(Compressor.Type.NONE).newCompressor(name + "." + dumper.getExtension());
 			
-			final OutputStream outputStream = outputFile != null ? new FileOutputStream(outputFile) : System.out;
+			final OutputStream outputStream = outputFilePath != null ? new FileOutputStream(new File(Substitutor.substitute(outputFilePath, variables))) : System.out;
 			
 			final Connection connection = sql2o.open();
 			dumper.onBegin(name, pipedOutputStream);
@@ -94,7 +101,7 @@ public class Dump {
 
 				@Override
 				public Void call() throws Exception {
-					provider.provide(connection, new ResultSetHandler<Void>() {
+					provider.provide(connection, variables, new ResultSetHandler<Void>() {
 
 						@Override
 						public Void handle(ResultSet resultSet) throws SQLException {
@@ -134,7 +141,7 @@ public class Dump {
 			
 			connection.close();
 			
-			if (outputFile != null) {
+			if (outputFilePath != null) {
 				outputStream.close();
 			}
 			
@@ -151,7 +158,7 @@ public class Dump {
 		CmdLineParser parser = new CmdLineParser(dump);
 		try {
 			parser.parseArgument(arguments);
-			dump.dump();
+			dump.dump(parser);
 		} catch (CmdLineException e) {
 			System.err.println(e.getMessage());
 			parser.printUsage(System.err);

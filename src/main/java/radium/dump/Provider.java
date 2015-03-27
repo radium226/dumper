@@ -4,6 +4,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
 
 
+import java.util.Map;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sql2o.Connection;
@@ -42,6 +44,6 @@ public interface Provider {
 		}
 	}
 	
-	<T> void provide(Connection connection, ResultSetHandler<T> resultSetHandler) throws SQLException;
+	<T> void provide(Connection connection, Map<String, String> variables, ResultSetHandler<T> resultSetHandler) throws SQLException;
 	
 }

@@ -119,7 +119,8 @@ public class ExcelDumper implements Dumper {
 
 		// Auto-filter of the table
 		CTAutoFilter autoFilter = CTAutoFilter.Factory.newInstance();
-		autoFilter.setRef(new CellRangeAddress(0, rowCount, 0, columnCount - 1).formatAsString());
+		System.out.println("columnCount = " + columnCount);
+		autoFilter.setRef(new CellRangeAddress(0, rowCount, 0, Math.max(0, columnCount - 1)).formatAsString());
 
 		table.setAutoFilter(autoFilter);
 
