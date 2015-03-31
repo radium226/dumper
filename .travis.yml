@@ -1,0 +1,14 @@
+language: java
+
+jdk:
+  - oraclejdk8
+
+before_install:
+  - wget "https://github.com/radium226/oracle-resource-maven-plugin/archive/master.zip" -O "master.zip"
+  - unzip "master.zip"
+  - cd "oracle-resource-maven-plugin-master"
+  - mvn install
+  - cd ".."
+  - rm -Rf "oracle-resource-maven-plugin-master"
+
+install: true
