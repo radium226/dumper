@@ -11,6 +11,6 @@ before_install:
   - mvn install
   - cd ".."
   - rm -Rf "oracle-resource-maven-plugin-master"
-  - mvn com.github.radium.oracle:oracle-resource-maven-plugin:install -Duser="oracle_shit_r193jfs89duf@mailinator.com" -Dpassword="Oracle123" -Dresource=UCP
+  - mvn com.github.radium.oracle:oracle-resource-maven-plugin:install -Duser="oracle_shit_r193jfs89duf@mailinator.com" -Dpassword="Oracle123" -Dresource=OJDBC7
 
 install: true
