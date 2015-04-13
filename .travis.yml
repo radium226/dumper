@@ -5,12 +5,12 @@ jdk:
 
 # We first install the maven oracle-resource-maven-plugin in order to install Oracle artifact in our repository
 before_install:
-  - wget "https://github.com/radium226/oracle-resource-maven-plugin/archive/master.zip" -O "master.zip"
+  - wget "https://github.com/radium226/otn/archive/master.zip" -O "master.zip"
   - unzip "master.zip"
-  - cd "oracle-resource-maven-plugin-master"
+  - cd "otn-master"
   - mvn install
   - cd ".."
-  - rm -Rf "oracle-resource-maven-plugin-master"
-  - mvn com.github.radium.oracle:oracle-resource-maven-plugin:install -Duser="oracle_shit_r193jfs89duf@mailinator.com" -Dpassword="Oracle123" -Dresource=OJDBC7
+  - rm -Rf "otn-master"
+  
+install: mvn --settings ./settings.xml install
 
-install: true
