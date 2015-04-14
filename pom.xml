@@ -18,7 +18,7 @@
 					<target>1.7</target>
 					<archive>
 					<manifest>
-						<mainClass>bnpparibas.datawarehouse.Dump.java</mainClass>
+						<mainClass>radium.Dump.java</mainClass>
 					</manifest>
 				  </archive>
 				</configuration>
