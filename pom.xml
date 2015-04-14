@@ -112,7 +112,7 @@
 	<repositories>
 		<repository>
 			<id>otn</id>
-			<url>otn://www.oracle.com/technetwork/database/features/jdbc/index-091264.html</url>
+			<url>otn://www.oracle.com/technetwork/database/features/jdbc/default-2280470.html</url>
 		</repository>
 	</repositories>
 </project>
