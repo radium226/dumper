@@ -49,6 +49,13 @@
 				</executions>
 			</plugin>
 		</plugins>
+		<extensions>
+			<extension>
+				<groupId>com.github.radium.oracle</groupId>
+				<artifactId>maven-otn-wagon</artifactId>
+				<version>0.1-SNAPSHOT</version>
+			</extension>
+		</extensions>
 	</build>
 	<dependencies>
 		<dependency>
@@ -104,14 +111,8 @@
 	</dependencies>
 	<repositories>
 		<repository>
-			<id>java.net release</id>
-			<url>https://maven.java.net/content/repositories/public/</url>
-			<releases />
-		</repository>
-		<repository>
-			<id>java.net snapshot</id>
-			<url>https://maven.java.net/content/repositories/snapshot/</url>
-			<snapshots />
+			<id>otn</id>
+			<url>otn://www.oracle.com/technetwork/database/features/jdbc/index-091264.html</url>
 		</repository>
 	</repositories>
 </project>
