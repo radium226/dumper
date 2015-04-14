@@ -13,4 +13,3 @@ before_install:
   - rm -Rf "otn-master"
   
 install: mvn --debug --settings ./settings.xml install -DskipTests
-
