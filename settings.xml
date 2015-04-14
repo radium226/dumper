@@ -3,8 +3,8 @@
 	<servers>
 		<server>
 			<id>otn</id>
-			<username>oracle_shit_r193jfs89duf@mailinator.com</username>
-			<password>Oracle123</password>
+			<username>${env.OTN_USER}</username>
+			<password>${env.OTN_PASSWORD}</password>
 		</server>
 	</servers>
 </settings>
