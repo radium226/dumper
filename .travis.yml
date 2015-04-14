@@ -12,5 +12,4 @@ before_install:
   - cd ".."
   - rm -Rf "otn-master"
   
-install: mvn --debug --settings ./settings.xml install -DskipTests
-#BOUYA
+install: mvn --settings ./settings.xml install -DskipTests
