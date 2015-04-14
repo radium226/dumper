@@ -4,8 +4,9 @@ jdk:
   - oraclejdk8
 
 env:
-  - OTN_USER="oracle_shit_r193jfs89duf@mailinator.com"
-  - OTN_PASSWORD="Oracle123"
+  global:
+    - OTN_USER="oracle_shit_r193jfs89duf@mailinator.com"
+    - OTN_PASSWORD="Oracle123"
 
 # We first install the maven oracle-resource-maven-plugin in order to install Oracle artifact in our repository
 before_install:
