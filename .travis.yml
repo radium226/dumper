@@ -1,21 +1,19 @@
 language: java
 
 jdk:
-  - oraclejdk8
+- oraclejdk8
 
 env:
   global:
-    - OTN_USER="oracle_shit_r193jfs89duf@mailinator.com"
-    - OTN_PASSWORD="Oracle123"
+  - secure: G/kJf6KdEU6/5iIOcyDS/h9o9jP+DvtVzYASZuYUxDeF3oy7yhxeXfhHuLbHh+DQNR0hnWNpqIvQMz6SB896VaKhshKawRd0exvmC9S9QOFCQUdBXcD/iTmE9M6UbcMQPaDMJIG+tN0itj/cJEoH/JAzMIHzosaIgr2iQIX9/O8=
+   - secure: eVzg7yUjOj8MjOTGvbbUqsdCE2SqqxmPe6pQ0j24DhwjAPVAkHL8UxDawrr6V/wGeH6sDHdAXEDTuGFg2ImqdQlnEsbrV2MkJ6Qd+/uKgig290GlLto0+S6Ln/KaOkafdEYv+kFURj5k3dyHPSeoA6Aof6NKGBW43c9XC9bOop4=
 
-# We first install the maven oracle-resource-maven-plugin in order to install Oracle artifact in our repository
 before_install:
-  - wget "https://github.com/radium226/otn/archive/master.zip" -O "master.zip"
-  - unzip "master.zip"
-  - cd "otn-master"
-  - mvn install
-  - cd ".."
-  - rm -Rf "otn-master"
-  
-install: mvn --settings ./settings.xml install -DskipTests
-#bouya
+- wget "https://github.com/radium226/otn/archive/master.zip" -O "master.zip"
+- unzip "master.zip"
+- cd "otn-master"
+- mvn install
+- cd ".."
+- rm -Rf "otn-master"
+
+install: mvn --settings "./settings.xml" --batch install -DskipTests
