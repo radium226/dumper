@@ -17,4 +17,3 @@ before_install:
 - rm -Rf "otn-master"
 
 install: mvn --settings "./settings.xml" --batch-mode install -DskipTests
-
